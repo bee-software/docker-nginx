@@ -22,6 +22,22 @@ test_hsts() {
     test "$(curl --head -k -s --fail https://127.0.0.1:33443/ | grep '^Strict-Transport-Security:.*$' | head -n1)" == $'Strict-Transport-Security: max-age=800\r'
 }
 
+test_x_real_ip() {
+    [[ "$(curl -k -s --fail https://127.0.0.1:33443/request_headers.php | grep '^X-Real-IP:.*$' | head -n1)" =~ ^X-Real-IP:\ 172.*$ ]]
+}
+
+test_x_forwarded_proto() {
+    test "$(curl -k -s --fail https://127.0.0.1:33443/request_headers.php | grep '^X-Forwarded-Proto:.*$' | head -n1)" == $'X-Forwarded-Proto: https'
+}
+
+test_x_forwarded_for() {
+    [[ "$(curl -k -s --fail https://127.0.0.1:33443/request_headers.php | grep '^X-Forwarded-For:.*$' | head -n1)" =~ ^X-Forwarded-For:\ 172.*$ ]]
+}
+
+test_host() {
+    test "$(curl -k -s --fail -H "Host: test.com" https://127.0.0.1:33443/request_headers.php | grep '^Host:.*$' | head -n1)" == $'Host: test.com'
+}
+
 assert_default_certificate() {
     local expected_common_name=$1
 
@@ -36,5 +52,9 @@ curl -s --fail -k https://127.0.0.1:33443/ > /dev/null
 
 test_http_redirects
 test_hsts
+test_x_real_ip
+test_x_forwarded_proto
+test_x_forwarded_for
+test_host
 assert_default_certificate "test.example.org"
 assert_sni_works
