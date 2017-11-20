@@ -2,7 +2,9 @@ version: '3'
 
 services:
   backend:
-    image: nginx:1.13.5-alpine
+    image: php:7-apache
+    volumes:
+      - ./tests/php_backend/:/var/www/html/
   proxy:
     image: nginx-sni-proxy
     build: .
