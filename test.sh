@@ -48,6 +48,14 @@ assert_sni_works() {
     test $(get_certificate_common_name_with_servername 127.0.0.1:33443 "test2.example.org") == "test2.example.org"
 }
 
+test_redirect_mode_redirects_to_configured_backend() {
+    # http redirects to backend
+    test "$(curl --head -s -H 'Host: test2.example.org' --fail http://127.0.0.1:33080/index.html | grep '^Location:.*$' | head -n1)" == $'Location: http://backend/index.html\r'
+
+    # https should redirect to backend
+    test "$(curl -k --head -s --resolve test2.example.org:33443:127.0.0.1 --fail https://test2.example.org:33443/index.html | grep '^Location:.*$' | head -n1)" == $'Location: http://backend/index.html\r'
+}
+
 curl -s --fail -k https://127.0.0.1:33443/ > /dev/null
 
 test_http_redirects
@@ -58,3 +66,4 @@ test_x_forwarded_for
 test_host
 assert_default_certificate "test.example.org"
 assert_sni_works
+test_redirect_mode_redirects_to_configured_backend

@@ -63,6 +63,7 @@ services:
         -----END RSA PRIVATE KEY-----
       TEST2_SERVER_NAME: "test2.example.org"
       TEST2_BACKEND_SERVER: "http://backend/"
+      TEST2_BACKEND_MODE: "redirect"
       TEST2_SSL_CERTIFICATE: |-
         -----BEGIN CERTIFICATE-----
         MIIDCzCCAfOgAwIBAgIJAO4XTMgzadSpMA0GCSqGSIb3DQEBBQUAMBwxGjAYBgNV

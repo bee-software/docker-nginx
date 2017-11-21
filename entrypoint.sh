@@ -12,6 +12,7 @@ render_template() {
     local backend_server=$5
     local default_server_label=$6
     local client_max_body_size=$7
+    local redirect_destination=$8
 
     SERVER_NAME=$server_name \
     default_server_label=$default_server_label \
@@ -19,7 +20,8 @@ render_template() {
     HSTS_MAX_AGE=$hsts_max_age \
     BACKEND_SERVER=$backend_server \
     CLIENT_MAX_BODY_SIZE=$client_max_body_size \
-        envsubst '${SERVER_NAME} ${default_server_label} ${SITE} ${HSTS_MAX_AGE} ${BACKEND_SERVER} ${CLIENT_MAX_BODY_SIZE}' < $template_file
+    REDIRECT_DESTINATION=$redirect_destination \
+        envsubst '${SERVER_NAME} ${default_server_label} ${SITE} ${HSTS_MAX_AGE} ${BACKEND_SERVER} ${CLIENT_MAX_BODY_SIZE} ${REDIRECT_DESTINATION}' < $template_file
 }
 
 generate_config() {
@@ -37,8 +39,16 @@ generate_config() {
         default_server_label=""
     fi
 
-    render_template /configs/http_redirect.conf "$site" "$server_name" "$hsts_max_age" "$backend_server" "$default_server_label" "$client_max_body_size"
-    render_template /configs/https_proxy.conf "$site" "$server_name" "$hsts_max_age" "$backend_server" "$default_server_label" "$client_max_body_size"
+    if [ "$backend_mode" == "proxy" ]; then
+        render_template /configs/http_redirect.conf "$site" "$server_name" "$hsts_max_age" "$backend_server" "$default_server_label" "$client_max_body_size" "https://\$host\$request_uri"
+        render_template /configs/https_proxy.conf "$site" "$server_name" "$hsts_max_age" "$backend_server" "$default_server_label" "$client_max_body_size" ""
+    elif [ "$backend_mode" == "redirect" ]; then
+        render_template /configs/http_redirect.conf "$site" "$server_name" "$hsts_max_age" "$backend_server" "$default_server_label" "$client_max_body_size" "${backend_server%/}\$request_uri"
+        render_template /configs/https_redirect.conf "$site" "$server_name" "$hsts_max_age" "$backend_server" "$default_server_label" "$client_max_body_size" "${backend_server%/}\$request_uri"
+    else
+        echo "Unsupported backend mode $backend_mode for site $site."
+        exit 1
+    fi
 }
 
 echo "> Initializing sites $SITES"
