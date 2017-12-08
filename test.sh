@@ -56,6 +56,10 @@ test_redirect_mode_redirects_to_configured_backend() {
     test "$(curl -k --head -s --resolve test2.example.org:33443:127.0.0.1 --fail https://test2.example.org:33443/index.html | grep '^Location:.*$' | head -n1)" == $'Location: http://backend/index.html\r'
 }
 
+test_frontend_url() {
+    test "$(curl -k -s --resolve test3.example.org:33443:127.0.0.1 --fail https://test3.example.org:33443/hello/request_headers.php | grep '^Host:.*$' | head -n1)" == $'Host: test3.example.org'
+}
+
 curl -s --fail -k https://127.0.0.1:33443/ > /dev/null
 
 test_http_redirects
@@ -67,3 +71,4 @@ test_host
 assert_default_certificate "test.example.org"
 assert_sni_works
 test_redirect_mode_redirects_to_configured_backend
+test_frontend_url

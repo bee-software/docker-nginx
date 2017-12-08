@@ -9,19 +9,21 @@ render_template() {
     local site=$2
     local server_name=$3
     local hsts_max_age=$4
-    local backend_server=$5
-    local default_server_label=$6
-    local client_max_body_size=$7
-    local redirect_destination=$8
+    local frontend_url=$5
+    local backend_server=$6
+    local default_server_label=$7
+    local client_max_body_size=$8
+    local redirect_destination=$9
 
     SERVER_NAME=$server_name \
     default_server_label=$default_server_label \
     SITE=$site \
     HSTS_MAX_AGE=$hsts_max_age \
+    FRONTEND_URL=$frontend_url \
     BACKEND_SERVER=$backend_server \
     CLIENT_MAX_BODY_SIZE=$client_max_body_size \
     REDIRECT_DESTINATION=$redirect_destination \
-        envsubst '${SERVER_NAME} ${default_server_label} ${SITE} ${HSTS_MAX_AGE} ${BACKEND_SERVER} ${CLIENT_MAX_BODY_SIZE} ${REDIRECT_DESTINATION}' < $template_file
+        envsubst '${SERVER_NAME} ${default_server_label} ${SITE} ${HSTS_MAX_AGE} ${FRONTEND_URL} ${BACKEND_SERVER} ${CLIENT_MAX_BODY_SIZE} ${REDIRECT_DESTINATION}' < $template_file
 }
 
 generate_config() {
@@ -29,9 +31,10 @@ generate_config() {
     local is_default_site=$2
     local server_name=$3
     local hsts_max_age=$4
-    local backend_server=$5
-    local backend_mode=$6
-    local client_max_body_size=$7
+    local frontend_url=$5
+    local backend_server=$6
+    local backend_mode=$7
+    local client_max_body_size=$8
 
     if $is_default_site; then
         default_server_label=" default_server"
@@ -40,11 +43,11 @@ generate_config() {
     fi
 
     if [ "$backend_mode" == "proxy" ]; then
-        render_template /configs/http_redirect.conf "$site" "$server_name" "$hsts_max_age" "$backend_server" "$default_server_label" "$client_max_body_size" "https://\$host\$request_uri"
-        render_template /configs/https_proxy.conf "$site" "$server_name" "$hsts_max_age" "$backend_server" "$default_server_label" "$client_max_body_size" ""
+        render_template /configs/http_redirect.conf "$site" "$server_name" "$hsts_max_age" "$frontend_url" "$backend_server" "$default_server_label" "$client_max_body_size" "https://\$host\$request_uri"
+        render_template /configs/https_proxy.conf "$site" "$server_name" "$hsts_max_age" "$frontend_url" "$backend_server" "$default_server_label" "$client_max_body_size" ""
     elif [ "$backend_mode" == "redirect" ]; then
-        render_template /configs/http_redirect.conf "$site" "$server_name" "$hsts_max_age" "$backend_server" "$default_server_label" "$client_max_body_size" "${backend_server%/}\$request_uri"
-        render_template /configs/https_redirect.conf "$site" "$server_name" "$hsts_max_age" "$backend_server" "$default_server_label" "$client_max_body_size" "${backend_server%/}\$request_uri"
+        render_template /configs/http_redirect.conf "$site" "$server_name" "$hsts_max_age" "$frontend_url" "$backend_server" "$default_server_label" "$client_max_body_size" "${backend_server%/}\$request_uri"
+        render_template /configs/https_redirect.conf "$site" "$server_name" "$hsts_max_age" "$frontend_url" "$backend_server" "$default_server_label" "$client_max_body_size" "${backend_server%/}\$request_uri"
     else
         echo "Unsupported backend mode $backend_mode for site $site."
         exit 1
@@ -59,6 +62,7 @@ for site in $SITES; do
     ssl_certificate_key_variable_name="${site}_SSL_CERTIFICATE_KEY"
     server_name_variable_name="${site}_SERVER_NAME"
     hsts_max_age_variable_name="${site}_HSTS_MAX_AGE"
+    frontend_url_variable_name="${site}_FRONTEND_URL"
     backend_server_variable_name="${site}_BACKEND_SERVER"
     backend_mode_variable_name="${site}_BACKEND_MODE"
     client_max_body_size_variable_name="${site}_CLIENT_MAX_BODY_SIZE"
@@ -80,6 +84,7 @@ for site in $SITES; do
         "$is_default_site" \
         "${!server_name_variable_name}" \
         "${!hsts_max_age_variable_name:-"600"}" \
+        "${!frontend_url_variable_name:-"/"}" \
         "${!backend_server_variable_name}" \
         "${!backend_mode_variable_name:-"proxy"}" \
         "${!client_max_body_size_variable_name:-"1m"}" > /etc/nginx/conf.d/$site.conf
