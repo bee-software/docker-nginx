@@ -60,8 +60,20 @@ test_frontend_url() {
     test "$(curl -k -s --resolve test3.example.org:33443:127.0.0.1 --fail https://test3.example.org:33443/hello/request_headers.php | grep '^Host:.*$' | head -n1)" == $'Host: test3.example.org'
 }
 
+test_timeout_after_5_seconds_on_test_example_org(){
+    ! curl --fail --head -s -H 'Host: test.example.org' -k \
+        https://127.0.0.1:33443/timeout_10s.php > /dev/null
+}
+
+test_don_t_timeout_after_10_seconds_on_test3_example_org(){
+    curl --fail -s -H 'Host: test3.example.org' -k \
+        https://127.0.0.1:33443/hello/timeout_10s.php > /dev/null
+}
+
 curl -s --fail -k https://127.0.0.1:33443/ > /dev/null
 
+test_timeout_after_5_seconds_on_test_example_org
+test_don_t_timeout_after_10_seconds_on_test3_example_org
 test_http_redirects
 test_hsts
 test_x_real_ip

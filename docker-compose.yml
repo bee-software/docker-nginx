@@ -13,6 +13,7 @@ services:
       TEST_SERVER_NAME: "test.example.org"
       TEST_BACKEND_SERVER: "http://backend/"
       TEST_HSTS_MAX_AGE: "800"
+      TEST_READ_TIMEOUT: "5s"
       TEST_SSL_CERTIFICATE: |-
         -----BEGIN CERTIFICATE-----
         MIIDCTCCAfGgAwIBAgIJALw8149pyAWJMA0GCSqGSIb3DQEBBQUAMBsxGTAXBgNV
@@ -116,6 +117,7 @@ services:
       TEST3_FRONTEND_URL: "/hello"
       TEST3_BACKEND_SERVER: "http://backend/"
       TEST3_HSTS_MAX_AGE: "800"
+      TEST3_READ_TIMEOUT: "20s"
       TEST3_SSL_CERTIFICATE: |-
         -----BEGIN CERTIFICATE-----
         MIIDCTCCAfGgAwIBAgIJALw8149pyAWJMA0GCSqGSIb3DQEBBQUAMBsxGTAXBgNV

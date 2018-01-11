@@ -5,15 +5,16 @@ FIRST_SITE=$(echo $SITES | cut -f1 -d' ')
 mkdir -p /etc/ssl/
 
 render_template() {
-    local template_file=$1
-    local site=$2
-    local server_name=$3
-    local hsts_max_age=$4
-    local frontend_url=$5
-    local backend_server=$6
-    local default_server_label=$7
-    local client_max_body_size=$8
-    local redirect_destination=$9
+    local template_file=$1; shift
+    local site=$1; shift
+    local server_name=$1; shift
+    local hsts_max_age=$1; shift
+    local frontend_url=$1; shift
+    local backend_server=$1; shift
+    local default_server_label=$1; shift
+    local client_max_body_size=$1; shift
+    local redirect_destination=$1; shift
+    local read_timeout=$1; shift
 
     SERVER_NAME=$server_name \
     default_server_label=$default_server_label \
@@ -23,7 +24,8 @@ render_template() {
     BACKEND_SERVER=$backend_server \
     CLIENT_MAX_BODY_SIZE=$client_max_body_size \
     REDIRECT_DESTINATION=$redirect_destination \
-        envsubst '${SERVER_NAME} ${default_server_label} ${SITE} ${HSTS_MAX_AGE} ${FRONTEND_URL} ${BACKEND_SERVER} ${CLIENT_MAX_BODY_SIZE} ${REDIRECT_DESTINATION}' < $template_file
+    READ_TIMEOUT=$read_timeout \
+        envsubst '${SERVER_NAME} ${default_server_label} ${SITE} ${HSTS_MAX_AGE} ${FRONTEND_URL} ${BACKEND_SERVER} ${CLIENT_MAX_BODY_SIZE} ${REDIRECT_DESTINATION} ${READ_TIMEOUT}' < $template_file
 }
 
 generate_config() {
@@ -35,6 +37,7 @@ generate_config() {
     local backend_server=$6
     local backend_mode=$7
     local client_max_body_size=$8
+    local read_timeout=$9
 
     if $is_default_site; then
         default_server_label=" default_server"
@@ -43,11 +46,11 @@ generate_config() {
     fi
 
     if [ "$backend_mode" == "proxy" ]; then
-        render_template /configs/http_redirect.conf "$site" "$server_name" "$hsts_max_age" "$frontend_url" "$backend_server" "$default_server_label" "$client_max_body_size" "https://\$host\$request_uri"
-        render_template /configs/https_proxy.conf "$site" "$server_name" "$hsts_max_age" "$frontend_url" "$backend_server" "$default_server_label" "$client_max_body_size" ""
+        render_template /configs/http_redirect.conf "$site" "$server_name" "$hsts_max_age" "$frontend_url" "$backend_server" "$default_server_label" "$client_max_body_size" "https://\$host\$request_uri" "$read_timeout"
+        render_template /configs/https_proxy.conf "$site" "$server_name" "$hsts_max_age" "$frontend_url" "$backend_server" "$default_server_label" "$client_max_body_size" "" "$read_timeout"
     elif [ "$backend_mode" == "redirect" ]; then
-        render_template /configs/http_redirect.conf "$site" "$server_name" "$hsts_max_age" "$frontend_url" "$backend_server" "$default_server_label" "$client_max_body_size" "${backend_server%/}\$request_uri"
-        render_template /configs/https_redirect.conf "$site" "$server_name" "$hsts_max_age" "$frontend_url" "$backend_server" "$default_server_label" "$client_max_body_size" "${backend_server%/}\$request_uri"
+        render_template /configs/http_redirect.conf "$site" "$server_name" "$hsts_max_age" "$frontend_url" "$backend_server" "$default_server_label" "$client_max_body_size" "${backend_server%/}\$request_uri" "$read_timeout"
+        render_template /configs/https_redirect.conf "$site" "$server_name" "$hsts_max_age" "$frontend_url" "$backend_server" "$default_server_label" "$client_max_body_size" "${backend_server%/}\$request_uri" "$read_timeout"
     else
         echo "Unsupported backend mode $backend_mode for site $site."
         exit 1
@@ -66,6 +69,7 @@ for site in $SITES; do
     backend_server_variable_name="${site}_BACKEND_SERVER"
     backend_mode_variable_name="${site}_BACKEND_MODE"
     client_max_body_size_variable_name="${site}_CLIENT_MAX_BODY_SIZE"
+    read_timeout_variable_name="${site}_READ_TIMEOUT"
     ssl_cert_file="/etc/ssl/$site.crt"
     ssl_cert_key_file="/etc/ssl/$site.key"
 
@@ -87,7 +91,8 @@ for site in $SITES; do
         "${!frontend_url_variable_name:-"/"}" \
         "${!backend_server_variable_name}" \
         "${!backend_mode_variable_name:-"proxy"}" \
-        "${!client_max_body_size_variable_name:-"1m"}" > /etc/nginx/conf.d/$site.conf
+        "${!client_max_body_size_variable_name:-"1m"}" \
+        "${!read_timeout_variable_name:-"120s"}" > /etc/nginx/conf.d/$site.conf
     cat /etc/nginx/conf.d/$site.conf
 done
 
