@@ -19,7 +19,11 @@ test_http_redirects() {
 }
 
 test_hsts() {
-    test "$(curl --head -k -s --fail https://127.0.0.1:33443/ | grep '^Strict-Transport-Security:.*$' | head -n1)" == $'Strict-Transport-Security: max-age=800\r'
+    test "$(curl --head -k -s --fail https://127.0.0.1:33443/ | grep '^Strict-Transport-Security:.*$' | head -n1 | tr -d '\r')" == 'Strict-Transport-Security: max-age=800; includeSubDomains'
+}
+
+test_hsts_default() {
+    test "$(curl -k --head -s --resolve test2.example.org:33443:127.0.0.1 --fail https://test2.example.org:33443/index.html | grep '^Strict-Transport-Security:.*$' | head -n1 | tr -d '\r')" == 'Strict-Transport-Security: max-age=63072000; includeSubDomains'
 }
 
 test_x_real_ip() {
@@ -76,6 +80,7 @@ test_timeout_after_5_seconds_on_test_example_org
 test_don_t_timeout_after_10_seconds_on_test3_example_org
 test_http_redirects
 test_hsts
+test_hsts_default
 test_x_real_ip
 test_x_forwarded_proto
 test_x_forwarded_for

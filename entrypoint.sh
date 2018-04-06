@@ -87,7 +87,7 @@ for site in $SITES; do
         "$site" \
         "$is_default_site" \
         "${!server_name_variable_name}" \
-        "${!hsts_max_age_variable_name:-"600"}" \
+        "${!hsts_max_age_variable_name:-"63072000"}" \
         "${!frontend_url_variable_name:-"/"}" \
         "${!backend_server_variable_name}" \
         "${!backend_mode_variable_name:-"proxy"}" \
