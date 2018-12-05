@@ -1,0 +1,115 @@
+version: '3'
+
+services:
+  backend:
+    image: php:7-apache
+    volumes:
+      - ../php_backend/:/var/www/html/
+  proxy:
+    image: nginx-sni-proxy
+    build: ../../
+    environment:
+      SITES: "TEST TEST2"
+      TEST_SERVER_NAME: "test.example.org"
+      TEST_BACKEND_SERVER: "http://backend/"
+      TEST_SSL_CERTIFICATE: |-
+        -----BEGIN CERTIFICATE-----
+        MIIDCTCCAfGgAwIBAgIJALw8149pyAWJMA0GCSqGSIb3DQEBBQUAMBsxGTAXBgNV
+        BAMMEHRlc3QuZXhhbXBsZS5vcmcwHhcNMTcwOTE4MTgzMzQ5WhcNMjcwOTE2MTgz
+        MzQ5WjAbMRkwFwYDVQQDDBB0ZXN0LmV4YW1wbGUub3JnMIIBIjANBgkqhkiG9w0B
+        AQEFAAOCAQ8AMIIBCgKCAQEAuMfM8S6yyHBrs060dsHWjhyoirovreR6hUystmow
+        DJh+1yQeiVBdTtjWiC86pytw/XlzCUg0Z3SwCalKDPkD1F42b5BAHu9XxmOqAWJn
+        0exqtJKCk8mBRtIUsAS5r6M4KE+tn/fMmVMC45REaW3C7hCL53AzBp4tQe9uhtkL
+        HpJWvHc9nojQXo014xYaY3rpsdQbw0/8SqAH+X6aDGFME9X+jBUp5LrRyvCG/cMI
+        Ti8GP7gw5ZCy2dfkNKM0NuPh22hWb5IyNHFjnS8+C3baLLiJVLCdCG7IQEhdWHFQ
+        RG5E4JKho9K3OXwQu0LV+c8cCvcKAFHfyG/bERVb6CDLUQIDAQABo1AwTjAdBgNV
+        HQ4EFgQUEv43RhNEGE8MkLJrvjWgheCghAMwHwYDVR0jBBgwFoAUEv43RhNEGE8M
+        kLJrvjWgheCghAMwDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQUFAAOCAQEAtw/e
+        oaPoJhwGo4Tu4Yt1Wrn5urtB3IehC+8EvmikUGGpeC6SMMdOIXWRfG+fK9JfrjfV
+        6ic6NSuonSIdmqCJRwmB79bZK1x0HJyF/oIDq5EjUtHIclUwiDLir9ygLcNed8E0
+        yG44fQcBf6Qz4lQc23q7lzC+LzfQRbbH7M14j+AyxPIq7aB1DuWDnJODl8MkbJab
+        9qPcK2QE3xdjWRWKWcvkH3nWd7K/o3b7oH0vojr96lxHbv/NYpTxNmxzDXCqcxi6
+        nNhFEcMPKkU32vCeYLjrF/G7DXnsXVsF0Av6vSXu0FKTUp3uJfpjOBDJA3GxUnAp
+        SE9VeTxoC5gHQutsmA==
+        -----END CERTIFICATE-----
+      TEST_SSL_CERTIFICATE_KEY: |-
+        -----BEGIN RSA PRIVATE KEY-----
+        MIIEowIBAAKCAQEAuMfM8S6yyHBrs060dsHWjhyoirovreR6hUystmowDJh+1yQe
+        iVBdTtjWiC86pytw/XlzCUg0Z3SwCalKDPkD1F42b5BAHu9XxmOqAWJn0exqtJKC
+        k8mBRtIUsAS5r6M4KE+tn/fMmVMC45REaW3C7hCL53AzBp4tQe9uhtkLHpJWvHc9
+        nojQXo014xYaY3rpsdQbw0/8SqAH+X6aDGFME9X+jBUp5LrRyvCG/cMITi8GP7gw
+        5ZCy2dfkNKM0NuPh22hWb5IyNHFjnS8+C3baLLiJVLCdCG7IQEhdWHFQRG5E4JKh
+        o9K3OXwQu0LV+c8cCvcKAFHfyG/bERVb6CDLUQIDAQABAoIBAAcI3D2GWJoW5ZLC
+        +U3YHVH1t1jos638F8oBXEXpjwC7wYBxSJRTsemxiaFPov0AQ2HzALUmwY/6ukTz
+        4/TQehvYplvi8v36gK3112AMHgW46WsMdNopfrlygAUfeO492YJ3XhXL+kcQCPkf
+        COe2nQgxKxJZjCfBV9m9wshxdOHqAcDNnJAhOrIsq8lqfg49uh/0A1uhfqVpQ5yA
+        jPIaYI6a0gtspqr+ThGNW235/ney12yMdQRQPXAy50J3QAym8Zist7DegFwEhq+D
+        mSlFjG6UXtpy5GCJAvdSHDNFHgAIbu8ObhKLlWXIe9ApdRj07BktJlASHQQSgT3T
+        Pgdbhk0CgYEA3npiWvq8R/vRcUTT13uqZyBg89SITffoIyR7K/JXCg7PvHjjkOW+
+        KrPx8gQOWfKCV5jLWt6P1oXpTQ6vOmzML6D3bf4eZJj2N/q5FIs8anQ7+7JBpdOP
+        jCn6g0wu8SXfRAyglS21m/6tao7hMpp778W5savQPMCz0Re8PnHAuOsCgYEA1J9P
+        8saANlzY6XHNWHrevA9VD4yaGId3dJsgoGnvt8/wVikUcsLCrKUpXsP/8p9CeSea
+        saBE6dOj8wtttxsmwPCivJIPoxNV9IgQGm5nnPTWsuYTj/Ec2VjI0mqFWFT/W/5j
+        APjeNxnH0OS8NkKyLgEv2oN0sx7Ea57M+KsOvbMCgYB6B3DpbDxX03T3BwSXXhqC
+        hE0JkRrOgVsP45O38C3zs1oYi8pukMV1EMx1rendRlpeB84K4qbMyRjFjndouYJp
+        4YW2DDvJe+kZnWllLlYOIgFAtm6xsVA8Vk41NFVPKjHDVpXCHZdOoCuolgRJyFiQ
+        lMic/puypxQ6bSVwrt5BzwKBgQCGHqhTwBsIL7E0MHETqw3tGs7RLCPX7TvQ9jmy
+        dqCcFjLIZslbSrd6KATcnk5JQWSw/+Z4vVw7EyGMIl1m712WvzQoNwpeF8hUo69k
+        vNfnDhqQZslYNwO3pmWnNUI/4f3ijajt6A5kO4Lrph2DLLcwhdclw15Nzs6gBF/P
+        TDfUOQKBgFpriE+l4ULYdP2TrF/UVW94XaTyN6DVauwlbJv/E+8FnLemfKdqSGk3
+        Bw3bEznd84hiK+dzWsoXeXl8grCJb69ws1rUvra1iLssOx7wxdf27aiciiTZkTgO
+        lkAs8l7dFc5FfRY7VqEfv9/vyD/6jP6W+J7K31lfIInNarZFvVzc
+        -----END RSA PRIVATE KEY-----
+      TEST2_SERVER_NAME: "test2.example.org"
+      TEST2_BACKEND_SERVER: "http://backend/"
+      TEST2_SSL_CERTIFICATE: |-
+        -----BEGIN CERTIFICATE-----
+        MIIDCzCCAfOgAwIBAgIJAO4XTMgzadSpMA0GCSqGSIb3DQEBBQUAMBwxGjAYBgNV
+        BAMMEXRlc3QyLmV4YW1wbGUub3JnMB4XDTE3MDkxODE5MDM0MVoXDTI3MDkxNjE5
+        MDM0MVowHDEaMBgGA1UEAwwRdGVzdDIuZXhhbXBsZS5vcmcwggEiMA0GCSqGSIb3
+        DQEBAQUAA4IBDwAwggEKAoIBAQDN8j+9tqGs8GwEVZRC7ImqBGNJ6Cl5yAL9KHjK
+        AKurNYcr7SxDEeLm9F0BOGjmK3VGD7YvcMbvDdjR7iD1YzAPcjTtjl+0FHLJdXGf
+        jU05seZxORE/uOBakaC6pfaqtyo1vEpGQmsmKJnfDKM7G9aHgybcIAUVv3znbJji
+        BiHzMTCIQcV4nRovEtWg9w0tYjiXKr2wjbiBRU1vhEas0U54XoUFr7VihB3PhOBh
+        vDivG9F76YBSITpg0XUSXuy/ZFgdhkzbXiuc/lluMHGmEwOiLR9IP29O7JhMmYSr
+        f8tL21ZaewB6+4AeN5ZmoebWWI8PkBLRW/wf1gX8aG+ySKbDAgMBAAGjUDBOMB0G
+        A1UdDgQWBBTpNyW4L1y4mZlYT198glFUon8VsjAfBgNVHSMEGDAWgBTpNyW4L1y4
+        mZlYT198glFUon8VsjAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEBBQUAA4IBAQBe
+        0ObqW+LBwp9AjwgAuA4J/stxdPzB15IaSRqkOs/Udf9+Rwrnl5OOaeeJoz1TWcB+
+        cTZuMJKb4Q5cp9iXVxWAT2ivy2zuSKBUn7/7ftGrjBzVUlFvQS+NxTt26PSV4p8n
+        QIhYISQYGS3V/5sGL7H9QyaOJZaun1OJK5QpNo+NHINOvbJbadxGwdFbCC8jhkYK
+        N+3JVqhegtBlOF+ntJUOeCB4fvGGoIVnKUz2yssdz8pShHouzqFhGvOeEG9ce1Q6
+        KimEa7eRLGtCZfkMSax4NvvB6n37mA/2oM9oab4Lnc/KkIbte2TeSy4E+/RPl23F
+        FRnqySAZ1xrQGAvG4a0B
+        -----END CERTIFICATE-----
+      TEST2_SSL_CERTIFICATE_KEY: |-
+        -----BEGIN RSA PRIVATE KEY-----
+        MIIEogIBAAKCAQEAzfI/vbahrPBsBFWUQuyJqgRjSegpecgC/Sh4ygCrqzWHK+0s
+        QxHi5vRdATho5it1Rg+2L3DG7w3Y0e4g9WMwD3I07Y5ftBRyyXVxn41NObHmcTkR
+        P7jgWpGguqX2qrcqNbxKRkJrJiiZ3wyjOxvWh4Mm3CAFFb9852yY4gYh8zEwiEHF
+        eJ0aLxLVoPcNLWI4lyq9sI24gUVNb4RGrNFOeF6FBa+1YoQdz4TgYbw4rxvRe+mA
+        UiE6YNF1El7sv2RYHYZM214rnP5ZbjBxphMDoi0fSD9vTuyYTJmEq3/LS9tWWnsA
+        evuAHjeWZqHm1liPD5AS0Vv8H9YF/GhvskimwwIDAQABAoIBABB2mB/bVKtVgN0L
+        1lFPRWYA+crzszUYBx0juhwz14VVPxwE1q/54xChYjnxv3j+6l4SbXb3Zf/ANJ/7
+        kEjth+8EKzT+V6o2pEJ0kAO4MP82uHw+mqFkbxLuZ1HkaIaXI9mt1qYtMxGW104c
+        XYQhIpIsqtOX/7AQYbTCWqpe4SHmnNXYG7PM5whoZ+REPPz5vZIH/Qh60E1DG5BM
+        1mzxd2Fa8yLPdfndP32yMq3fu0ShXgeIcvI0q0uHSE79FCeLbXA5qrsvwnnokd/5
+        uHUu5Ogwjc/ViHcwfE5ZTDCdfB+ILKwXyvhq9mbv+27u44npoCQ/tIOlchBmXyM5
+        A1z4bVkCgYEA/4TSna5yMQU5d7eOshSD4VnLUcF1XMwiA5lLdL9OkYrWoquwPDej
+        BcBmId166mh0AWHWw2zC91wGXIcrwX7WKs0FB9dBi5kvHlWLUOBqhP3tFCPkA9J3
+        DnPBSWByG0UHd8MPo3jGzdX5aXFWmO4s1yzY4NWhKnJIjGQuw9YoF+0CgYEAzlWH
+        ag3dLQVTdsy3y/aUPGAjBa/fS6CkyYxRzZbtr6U+kFH0fUGXGJlr1W4yfjG15wYp
+        fDduHkNcOxPat7TfcGwPLHHJxIhgRUhCNJ2fAre5eKC/rLvKJa7wPxvd0Do34nzQ
+        gmEnBfFX6LLrs+V5p3ktHckCtmtR+xrVB/hIg28CgYB9kvkvJRxZmwezHjKysgJe
+        LZMOitTy1h+hRSUgKyShwmnZaCckcPNdUEDhQ8e0i8D3LO4u/LSUfFVkA8otPfhi
+        8H8Ya2F7Cb1uWvwssx2mXmS1ES5t8nEwWRMUzKFHZZVV9jcpT6HkZtQ8TccRQXwo
+        A5JSbKrYAXJGDLYu6ICrwQKBgDX1siMvGv9yHCC+avahNqUPczlChD/v9AhtdNsy
+        NFix+0mc1TaIl64sOUIovnW4JF0VhHXivR6W+SDOEW3nlGN/LvytiVmnXJ3hxsah
+        zfrU92EvkNDoj3YJaPToIbsZ7pGBmLnwFFd+hUHqwK9cPNNqYj0e22G/cUIdA0dB
+        TB1rAoGAJT5ZDZYvLalvnYX+P/JSUOebXBUmAGSbvfiEHq88vaO1uY79nqZhoKo8
+        GFFgMXoahEM9o9hEMv1DIHGqjNqHP8gBdUU5O4YhwTmJzNIdBC0qXnJDxcjm6nPp
+        cUsOQW+AlPmMTxNq5kG8b/LTO3P5YyPVySoIOyfmTAuXznhYjbc=
+        -----END RSA PRIVATE KEY-----
+    ports:
+      - $HTTP_PORT:80
+      - $HTTPS_PORT:443

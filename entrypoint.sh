@@ -15,6 +15,7 @@ render_template() {
     local client_max_body_size=$1; shift
     local redirect_destination=$1; shift
     local read_timeout=$1; shift
+    local auth_basic=$1; shift
 
     SERVER_NAME=$server_name \
     default_server_label=$default_server_label \
@@ -25,19 +26,21 @@ render_template() {
     CLIENT_MAX_BODY_SIZE=$client_max_body_size \
     REDIRECT_DESTINATION=$redirect_destination \
     READ_TIMEOUT=$read_timeout \
-        envsubst '${SERVER_NAME} ${default_server_label} ${SITE} ${HSTS_MAX_AGE} ${FRONTEND_URL} ${BACKEND_SERVER} ${CLIENT_MAX_BODY_SIZE} ${REDIRECT_DESTINATION} ${READ_TIMEOUT}' < $template_file
+    AUTH_BASIC=${auth_basic:-"off"} \
+        envsubst '${SERVER_NAME} ${default_server_label} ${SITE} ${HSTS_MAX_AGE} ${FRONTEND_URL} ${BACKEND_SERVER} ${CLIENT_MAX_BODY_SIZE} ${REDIRECT_DESTINATION} ${READ_TIMEOUT} ${AUTH_BASIC}' < $template_file
 }
 
 generate_config() {
-    local site=$1
-    local is_default_site=$2
-    local server_name=$3
-    local hsts_max_age=$4
-    local frontend_url=$5
-    local backend_server=$6
-    local backend_mode=$7
-    local client_max_body_size=$8
-    local read_timeout=$9
+    local site=$1; shift
+    local is_default_site=$1; shift
+    local server_name=$1; shift
+    local hsts_max_age=$1; shift
+    local frontend_url=$1; shift
+    local backend_server=$1; shift
+    local backend_mode=$1; shift
+    local client_max_body_size=$1; shift
+    local read_timeout=$1; shift
+    local auth_basic=$1; shift
 
     if $is_default_site; then
         default_server_label=" default_server"
@@ -46,11 +49,55 @@ generate_config() {
     fi
 
     if [ "$backend_mode" == "proxy" ]; then
-        render_template /configs/http_redirect.conf "$site" "$server_name" "$hsts_max_age" "$frontend_url" "$backend_server" "$default_server_label" "$client_max_body_size" "https://\$host\$request_uri" "$read_timeout"
-        render_template /configs/https_proxy.conf "$site" "$server_name" "$hsts_max_age" "$frontend_url" "$backend_server" "$default_server_label" "$client_max_body_size" "" "$read_timeout"
+        render_template /configs/http_redirect.conf \
+            "$site" \
+            "$server_name" \
+            "$hsts_max_age" \
+            "$frontend_url" \
+            "$backend_server" \
+            "$default_server_label" \
+            "$client_max_body_size" \
+            "https://\$host\$request_uri" \
+            "$read_timeout" \
+            "$auth_basic"
+
+        render_template /configs/https_proxy.conf \
+            "$site" \
+            "$server_name" \
+            "$hsts_max_age" \
+            "$frontend_url" \
+            "$backend_server" \
+            "$default_server_label" \
+            "$client_max_body_size" \
+            "" \
+            "$read_timeout" \
+            "$auth_basic"
+
     elif [ "$backend_mode" == "redirect" ]; then
-        render_template /configs/http_redirect.conf "$site" "$server_name" "$hsts_max_age" "$frontend_url" "$backend_server" "$default_server_label" "$client_max_body_size" "${backend_server%/}\$request_uri" "$read_timeout"
-        render_template /configs/https_redirect.conf "$site" "$server_name" "$hsts_max_age" "$frontend_url" "$backend_server" "$default_server_label" "$client_max_body_size" "${backend_server%/}\$request_uri" "$read_timeout"
+        render_template /configs/http_redirect.conf \
+            "$site" \
+            "$server_name" \
+            "$hsts_max_age" \
+            "$frontend_url" \
+            "$backend_server" \
+            "$default_server_label" \
+            "$client_max_body_size" \
+            "${backend_server%/}\$request_uri" \
+            "$read_timeout" \
+            "$auth_basic"
+        
+        render_template /configs/https_redirect.conf \
+            "$site" \
+            "$server_name" \
+            "$hsts_max_age" \
+            "$frontend_url" \
+            "$backend_server" \
+            "$default_server_label" \
+            "$client_max_body_size" \
+            "${backend_server%/}\$request_uri" \
+            "$read_timeout" \
+            "$auth_basic"
+            
     else
         echo "Unsupported backend mode $backend_mode for site $site."
         exit 1
@@ -70,12 +117,21 @@ for site in $SITES; do
     backend_mode_variable_name="${site}_BACKEND_MODE"
     client_max_body_size_variable_name="${site}_CLIENT_MAX_BODY_SIZE"
     read_timeout_variable_name="${site}_READ_TIMEOUT"
+    basic_auth_variable_name="${site}_BASIC_AUTH"
     ssl_cert_file="/etc/ssl/$site.crt"
     ssl_cert_key_file="/etc/ssl/$site.key"
 
     echo "${!ssl_certificate_variable_name}" > $ssl_cert_file
     echo "${!ssl_certificate_key_variable_name}" > $ssl_cert_key_file
     chmod 600 $ssl_cert_key_file
+
+    echo "${!basic_auth_variable_name:-""}" > /etc/nginx/${site}.htpasswd
+
+    if [ -n "${!basic_auth_variable_name:-""}" ]; then
+        auth_basic="Restricted"
+    else
+        auth_basic="off"
+    fi
 
     if [ "$site" == "$FIRST_SITE" ]; then
         is_default_site="true"
@@ -92,7 +148,8 @@ for site in $SITES; do
         "${!backend_server_variable_name}" \
         "${!backend_mode_variable_name:-"proxy"}" \
         "${!client_max_body_size_variable_name:-"1m"}" \
-        "${!read_timeout_variable_name:-"120s"}" > /etc/nginx/conf.d/$site.conf
+        "${!read_timeout_variable_name:-"120s"}" \
+        "${auth_basic}" > /etc/nginx/conf.d/$site.conf
     cat /etc/nginx/conf.d/$site.conf
 done
 
