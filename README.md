@@ -1,10 +1,12 @@
+[![Build Status](https://travis-ci.org/mat128/nginx-sni-proxy.svg?branch=master)](https://travis-ci.org/mat128/nginx-sni-proxy)
+
 NGINX-SNI-proxy
 ===============
 
 This is an easy to configure (100% environment variable driven) reverse proxy.
 It allows easy use of SNI.
 
-Read the different examples under the test directory
+Read the different examples under the test directory.
 
 Options
 =======
