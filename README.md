@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/mat128/nginx-sni-proxy.svg?branch=master)](https://travis-ci.org/mat128/nginx-sni-proxy)
+[![Build Status](https://travis-ci.org/bee-software/docker-nginx.svg?branch=master)](https://travis-ci.org/bee-software/docker-nginx)
 
 NGINX-SNI-proxy
 ===============
