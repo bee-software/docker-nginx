@@ -15,46 +15,43 @@ This image provides SSL termination as a utility which can be plugged into any e
 Typical usage
 =============
 
-By default, the first site listed in `SITES` will be the default site. This site will be served to any non-SNI clients.
-
 Declare a new service to handle SSL termination for your services, as such:
 
-        version: '3'
+    version: '3'
+    
+    services:
+      wordpress:
+        image: wordpress
+      
+      other-app:
+        image: tomcat
         
-        services:
-          wordpress:
-            image: wordpress
-          
-          other-app:
-            image: tomcat
-            
-          proxy:
-            image: beesoftware/nginx:latest
-            environment:
-              SITES: "WORDPRESS MY_OTHER_APP"
+      proxy:
+        image: beesoftware/nginx:latest
+        environment:
+          SITES: "WORDPRESS MY_OTHER_APP"
 
-              WORDPRESS_SERVER_NAME: "test.example.org"
-              WORDPRESS_BACKEND_SERVER: "http://wordpress/"
-              WORDPRESS_SSL_CERTIFICATE: |-
-                -----BEGIN CERTIFICATE-----
-                <snip>
-                -----END CERTIFICATE-----
-              WORDPRESS_SSL_CERTIFICATE_KEY: |-
-                -----BEGIN RSA PRIVATE KEY-----
-                <snip>
-                -----END RSA PRIVATE KEY-----
+          WORDPRESS_SERVER_NAME: "test.example.org"
+          WORDPRESS_BACKEND_SERVER: "http://wordpress/"
+          WORDPRESS_SSL_CERTIFICATE: |-
+            -----BEGIN CERTIFICATE-----
+            <snip>
+            -----END CERTIFICATE-----
+          WORDPRESS_SSL_CERTIFICATE_KEY: |-
+            -----BEGIN RSA PRIVATE KEY-----
+            <snip>
+            -----END RSA PRIVATE KEY-----
 
-              MY_OTHER_APP_SERVER_NAME: "test.example.org"
-              MY_OTHER_APP_BACKEND_SERVER: "http://other-app/"
-              MY_OTHER_APP_SSL_CERTIFICATE: |-
-                -----BEGIN CERTIFICATE-----
-                <snip>
-                -----END CERTIFICATE-----
-              MY_OTHER_APP_SSL_CERTIFICATE_KEY: |-
-                -----BEGIN RSA PRIVATE KEY-----
-                <snip>
-                -----END RSA PRIVATE KEY-----
-              
+          MY_OTHER_APP_SERVER_NAME: "test.example.org"
+          MY_OTHER_APP_BACKEND_SERVER: "http://other-app/"
+          MY_OTHER_APP_SSL_CERTIFICATE: |-
+            -----BEGIN CERTIFICATE-----
+            <snip>
+            -----END CERTIFICATE-----
+          MY_OTHER_APP_SSL_CERTIFICATE_KEY: |-
+            -----BEGIN RSA PRIVATE KEY-----
+            <snip>
+            -----END RSA PRIVATE KEY-----
 
 Options
 =======
