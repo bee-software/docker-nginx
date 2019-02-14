@@ -16,6 +16,7 @@ render_template() {
     local redirect_destination=$1; shift
     local read_timeout=$1; shift
     local auth_basic=$1; shift
+    local custom_location_options=$1; shift
 
     SERVER_NAME=$server_name \
     default_server_label=$default_server_label \
@@ -27,7 +28,20 @@ render_template() {
     REDIRECT_DESTINATION=$redirect_destination \
     READ_TIMEOUT=$read_timeout \
     AUTH_BASIC=${auth_basic:-"off"} \
-        envsubst '${SERVER_NAME} ${default_server_label} ${SITE} ${HSTS_MAX_AGE} ${FRONTEND_URL} ${BACKEND_SERVER} ${CLIENT_MAX_BODY_SIZE} ${REDIRECT_DESTINATION} ${READ_TIMEOUT} ${AUTH_BASIC}' < $template_file
+    CUSTOM_LOCATION_OPTIONS="$custom_location_options" \
+        envsubst '
+        ${SERVER_NAME}
+        ${default_server_label}
+        ${SITE}
+        ${HSTS_MAX_AGE}
+        ${FRONTEND_URL}
+        ${BACKEND_SERVER}
+        ${CLIENT_MAX_BODY_SIZE}
+        ${REDIRECT_DESTINATION}
+        ${READ_TIMEOUT}
+        ${AUTH_BASIC}
+        ${CUSTOM_LOCATION_OPTIONS}
+        ' < $template_file
 }
 
 generate_config() {
@@ -41,6 +55,7 @@ generate_config() {
     local client_max_body_size=$1; shift
     local read_timeout=$1; shift
     local auth_basic=$1; shift
+    local custom_location_options=$1; shift
 
     if $is_default_site; then
         default_server_label=" default_server"
@@ -59,7 +74,8 @@ generate_config() {
             "$client_max_body_size" \
             "https://\$host\$request_uri" \
             "$read_timeout" \
-            "$auth_basic"
+            "$auth_basic" \
+            "$custom_location_options"
 
         render_template /configs/https_proxy.conf \
             "$site" \
@@ -71,7 +87,8 @@ generate_config() {
             "$client_max_body_size" \
             "" \
             "$read_timeout" \
-            "$auth_basic"
+            "$auth_basic" \
+            "$custom_location_options"
 
     elif [ "$backend_mode" == "redirect" ]; then
         render_template /configs/http_redirect.conf \
@@ -84,7 +101,8 @@ generate_config() {
             "$client_max_body_size" \
             "${backend_server%/}\$request_uri" \
             "$read_timeout" \
-            "$auth_basic"
+            "$auth_basic" \
+            "$custom_location_options"
         
         render_template /configs/https_redirect.conf \
             "$site" \
@@ -96,7 +114,8 @@ generate_config() {
             "$client_max_body_size" \
             "${backend_server%/}\$request_uri" \
             "$read_timeout" \
-            "$auth_basic"
+            "$auth_basic" \
+            "$custom_location_options"
             
     else
         echo "Unsupported backend mode $backend_mode for site $site."
@@ -118,6 +137,8 @@ for site in $SITES; do
     client_max_body_size_variable_name="${site}_CLIENT_MAX_BODY_SIZE"
     read_timeout_variable_name="${site}_READ_TIMEOUT"
     basic_auth_variable_name="${site}_BASIC_AUTH"
+    custom_location_options_variable_name="${site}_CUSTOM_LOCATION_OPTIONS"
+
     ssl_cert_file="/etc/ssl/$site.crt"
     ssl_cert_key_file="/etc/ssl/$site.key"
 
@@ -149,7 +170,8 @@ for site in $SITES; do
         "${!backend_mode_variable_name:-"proxy"}" \
         "${!client_max_body_size_variable_name:-"1m"}" \
         "${!read_timeout_variable_name:-"120s"}" \
-        "${auth_basic}" > /etc/nginx/conf.d/$site.conf
+        "${auth_basic}" \
+        "${!custom_location_options_variable_name:-""}" > /etc/nginx/conf.d/$site.conf
     cat /etc/nginx/conf.d/$site.conf
 done
 

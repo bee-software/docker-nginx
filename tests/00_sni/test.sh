@@ -24,11 +24,11 @@ get_certificate_common_name_with_servername() {
 assert_default_certificate() {
     local expected_common_name=$1
 
-    test $(get_certificate_common_name 127.0.0.1:$HTTPS_PORT) == "$expected_common_name"
+    test "$(get_certificate_common_name 127.0.0.1:$HTTPS_PORT)" == "$expected_common_name"
 }
 
 assert_sni_works() {
-    test $(get_certificate_common_name_with_servername 127.0.0.1:$HTTPS_PORT "test2.example.org") == "test2.example.org"
+    test "$(get_certificate_common_name_with_servername 127.0.0.1:$HTTPS_PORT "test2.example.org")" == "test2.example.org"
 }
 
 assert_default_certificate "test.example.org"

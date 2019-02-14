@@ -10,3 +10,4 @@ test:
 	tests/04_reverse_proxy_headers/test.sh
 	tests/05_frontend_url/test.sh
 	tests/06_basic_auth/test.sh
+	tests/07_custom_location_options/test.sh

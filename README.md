@@ -118,3 +118,8 @@ Multiple values can be provided, as such:
         anotherUser:$$apr1$$Mgq8bs09$$93K0.B7zL30ERLPoIa8zH1
         
 Dollar signs have to be doubled inside of docker-compose files.
+
+CUSTOM_LOCATION_OPTIONS
+-----------------------
+
+Provides the ability to add custom options in the proxy location block.
