@@ -20,6 +20,10 @@ test_x_forwarded_for() {
     [[ "$(curl -k -s --fail https://127.0.0.1:$HTTPS_PORT/request_headers.php | grep '^X-Forwarded-For:.*$' | head -n1)" =~ ^X-Forwarded-For:\ 172.*$ ]]
 }
 
+test_x_forwarded_host() {
+    test "$(curl -k -s --fail -H "Host: test.com" https://127.0.0.1:$HTTPS_PORT/request_headers.php | grep '^X-Forwarded-Host:.*$' | head -n1)" == "X-Forwarded-Host: test.com:443" # This is the actual port nginx is listening on. See docker-compose.yml.
+}
+
 test_host() {
     test "$(curl -k -s --fail -H "Host: test.com" https://127.0.0.1:$HTTPS_PORT/request_headers.php | grep '^Host:.*$' | head -n1)" == $'Host: test.com'
 }
@@ -27,4 +31,5 @@ test_host() {
 test_x_real_ip
 test_x_forwarded_proto
 test_x_forwarded_for
+test_x_forwarded_host
 test_host
