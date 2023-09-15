@@ -1,4 +1,4 @@
-FROM nginx:1.13.11
+FROM nginx:1.25.2
 
 COPY configs /configs
 
